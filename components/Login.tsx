@@ -62,7 +62,7 @@ export default function Login() {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         const enteredName = name.trim();
-        const role: 'admin' | 'listener' = email === 'admin@gmail.com' ? 'admin' : 'listener';
+        const role: 'admin' | 'listener' = email === 'piyushraj@petalmail.com' ? 'admin' : 'listener';
 
         await updateProfile(user, { displayName: enteredName });
         await setDoc(
@@ -89,7 +89,7 @@ export default function Login() {
           const data = userSnap.data();
           role = data?.role === 'admin' ? 'admin' : 'listener';
         } else {
-          role = email === 'admin@gmail.com' ? 'admin' : 'listener';
+          role = email === 'piyushraj@petalmail.com' ? 'admin' : 'listener';
           await setDoc(
             userRef,
             {
