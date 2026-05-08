@@ -2,6 +2,9 @@ import { auth } from './firebase';
 
 export const uploadToCloudinary = async (file: File | Blob) => {
   const user = auth.currentUser;
+
+  console.log("Current UID:", user?.uid);
+  
   if (!user) {
     throw new Error('User not authenticated');
   }
