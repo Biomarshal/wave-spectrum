@@ -3,13 +3,17 @@ import { verifyAdmin } from '@/lib/firebaseAdmin';
 
 export async function POST(req: Request) {
   try {
-    const adminUser = await verifyAdmin(req);
-    if (!adminUser) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access only' }, { status: 403 });
+    const adminResult = await verifyAdmin(req);
+    
+    if ('error' in adminResult) {
+      console.error('[API delete-song] Forbidden:', adminResult.error);
+      return NextResponse.json({ error: adminResult.error }, { status: 403 });
     }
 
-    const { publicId } = await req.json();
+    const adminUser = adminResult;
+    console.log('[API delete-song] Admin verified:', adminUser.uid);
 
+    const { publicId } = await req.json();
 
     if (!publicId) {
       return NextResponse.json({ error: 'Missing publicId' }, { status: 400 });
@@ -20,6 +24,7 @@ export async function POST(req: Request) {
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
+      console.error('[API delete-song] Missing Cloudinary config');
       return NextResponse.json({ error: 'Cloudinary configuration is missing' }, { status: 500 });
     }
 
@@ -45,12 +50,14 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (data.result !== 'ok' && data.result !== 'not found') {
+      console.error('[API delete-song] Cloudinary error:', data);
       throw new Error(data.error?.message || 'Failed to delete from Cloudinary');
     }
 
     return NextResponse.json({ success: true, result: data.result });
   } catch (error: any) {
-    console.error('Delete song error:', error);
+    console.error('[API delete-song] Unexpected error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+

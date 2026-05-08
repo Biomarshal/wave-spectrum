@@ -82,10 +82,10 @@ export default function Upload({ onUploadComplete }: { onUploadComplete: () => v
           // Upload cover image separately to Cloudinary using FormData (Unsigned)
           const imageFormData = new FormData();
           imageFormData.append("file", imageFile);
-          imageFormData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+          imageFormData.append("upload_preset", "Wave-Spectrum-Images");
           
           const artResponse = await fetch(
-            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
             {
               method: "POST",
               body: imageFormData,

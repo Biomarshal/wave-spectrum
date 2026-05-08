@@ -7,7 +7,7 @@ export const uploadToCloudinary = async (file: File | Blob) => {
   }
 
   // 1. Get Firebase ID token
-  const token = await user.getIdToken();
+  const token = await user.getIdToken(true);
 
   // 2. Call backend to get Cloudinary signature
   const signResponse = await fetch('/api/sign-cloudinary', {

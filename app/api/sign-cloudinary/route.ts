@@ -10,16 +10,21 @@ cloudinary.config({
 
 export async function POST(req: NextRequest) {
   try {
-    const adminUser = await verifyAdmin(req);
-    if (!adminUser) {
-      return NextResponse.json({ error: 'Forbidden: Admin access only' }, { status: 403 });
+    const adminResult = await verifyAdmin(req);
+    
+    if ('error' in adminResult) {
+      console.error('[API sign-cloudinary] Forbidden:', adminResult.error);
+      return NextResponse.json({ error: adminResult.error }, { status: 403 });
     }
 
+    const adminUser = adminResult;
+    console.log('[API sign-cloudinary] Admin verified:', adminUser.uid);
 
     const timestamp = Math.round(new Date().getTime() / 1000);
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
     if (!uploadPreset) {
+      console.error('[API sign-cloudinary] Missing upload preset');
       return NextResponse.json({ error: 'Cloudinary upload preset is missing' }, { status: 500 });
     }
 
@@ -41,7 +46,8 @@ export async function POST(req: NextRequest) {
       uploadPreset: uploadPreset,
     });
   } catch (error: any) {
-    console.error('Error signing Cloudinary upload:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('[API sign-cloudinary] Unexpected error:', error);
+    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }
+

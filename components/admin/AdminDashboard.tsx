@@ -58,7 +58,7 @@ export default function AdminDashboard() {
       if (song.publicId) {
         const user = auth.currentUser;
         if (!user) throw new Error('Not authenticated');
-        const token = await user.getIdToken();
+        const token = await user.getIdToken(true);
 
         await fetch('/api/delete-song', {
           method: 'POST',
