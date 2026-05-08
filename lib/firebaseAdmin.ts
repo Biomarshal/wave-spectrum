@@ -6,6 +6,12 @@ const firebaseAdminConfig = {
   privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
 };
 
+console.log("ENV CHECK:", {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmailExists: !!process.env.FIREBASE_CLIENT_EMAIL,
+  privateKeyExists: !!process.env.FIREBASE_PRIVATE_KEY,
+});
+
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
@@ -38,6 +44,9 @@ export async function verifyAdmin(req: Request) {
     let decodedToken;
     try {
       decodedToken = await adminAuth.verifyIdToken(idToken);
+      console.log("TOKEN VERIFIED");
+      console.log("Decoded UID:", decodedToken.uid);
+      console.log("Firebase Project:", process.env.FIREBASE_PROJECT_ID);
     } catch (err: any) {
       console.error('[Auth Debug] Token verification failed:', err.message);
       return { error: `Token verification failed: ${err.message}` };
