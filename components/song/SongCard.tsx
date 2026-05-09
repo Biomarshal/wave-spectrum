@@ -17,78 +17,78 @@ interface SongCardProps {
 function SongCard({ track, isActive, isPlaying, onPlay, index }: SongCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.03, 0.25) }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: Math.min(index * 0.04, 0.3) }}
       onClick={onPlay}
-      className={`group relative rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-200 ${
+      className={`group relative rounded-2xl p-3 sm:p-4 cursor-pointer transition-all duration-300 border border-transparent ${
         isActive
-          ? 'bg-white/[0.08] ring-1 ring-[#e05297]/30'
-          : 'bg-white/[0.02] hover:bg-white/[0.06]'
+          ? 'bg-white/[0.08] border-white/10 shadow-[0_8px_24px_rgba(224,82,151,0.15)] ring-1 ring-[#e05297]/30'
+          : 'bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/5 hover:shadow-xl hover:-translate-y-1'
       }`}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlay(); } }}
     >
-      {/* Cover */}
-      <div className="relative w-full aspect-square rounded-lg bg-gradient-to-br from-white/[0.04] to-white/[0.08] mb-2.5 md:mb-3 flex items-center justify-center overflow-hidden">
+      {/* Cover container */}
+      <div className="relative w-full aspect-square rounded-xl bg-[#1e1b4b]/40 mb-3 sm:mb-4 flex items-center justify-center overflow-hidden shadow-inner ring-1 ring-white/5">
         {track.albumArt ? (
           <img
             src={track.albumArt}
             alt={track.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
           />
-        ) : null}
-
-        {isActive && isPlaying ? (
-          <div className="relative z-10 flex items-end gap-[3px] h-7 md:h-8">
-            {[0, 1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                className="w-[3px] bg-[#e05297] rounded-full"
-                animate={{ height: ['20%', '100%', '20%'] }}
-                transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.12 }}
-              />
-            ))}
+        ) : (
+          <div className="text-white/10">
+            <AppLogo size={isActive ? 40 : 32} />
           </div>
-        ) : !track.albumArt ? (
-          <>
-            <div className="md:hidden">
-              <AppLogo size={24} />
-            </div>
-            <div className="hidden md:block">
-              <AppLogo size={32} />
-            </div>
-          </>
-        ) : null}
+        )}
 
-        {/* Play button overlay */}
+        {/* Dynamic visualizer overlay */}
+        {isActive && isPlaying && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+            <div className="flex items-end gap-[3px] h-8 md:h-10">
+              {[0, 1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-[4px] bg-[#e05297] rounded-full shadow-[0_0_10px_#e05297]"
+                  animate={{ height: ['25%', '100%', '25%'] }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Play button overlay - Premium Spotify style */}
         <div
-          className={`absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity duration-200 ${
-            isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          className={`absolute bottom-2 right-2 flex items-center justify-center transition-all duration-300 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 ${
+            isActive ? 'opacity-100 translate-y-0' : ''
           }`}
         >
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg shadow-black/30 hover:scale-105 active:scale-95 transition-transform">
+          <div className="w-10 h-10 rounded-full bg-[#e05297] text-white flex items-center justify-center shadow-xl shadow-black/50 ring-2 ring-white/20 hover:scale-110 active:scale-90 transition-all">
             {isActive && isPlaying ? (
               <Pause size={18} fill="currentColor" />
             ) : (
-              <Play size={18} fill="currentColor" className="ml-0.5" />
+              <Play size={18} fill="currentColor" className="ml-1" />
             )}
           </div>
         </div>
       </div>
 
-      {/* Info */}
-      <h3
-        className={`text-xs md:text-sm font-semibold truncate mb-0.5 ${
-          isActive ? 'text-[#e05297]' : 'text-white'
-        }`}
-      >
-        {track.title}
-      </h3>
-      <p className="text-[11px] md:text-xs text-slate-500 truncate">
-        {track.artist || 'Unknown Artist'}
-      </p>
+      {/* Info Section */}
+      <div className="space-y-1">
+        <h3
+          className={`text-sm font-bold truncate tracking-tight transition-colors ${
+            isActive ? 'text-[#e05297]' : 'text-white group-hover:text-white'
+          }`}
+        >
+          {track.title}
+        </h3>
+        <p className="text-xs font-medium text-slate-500 truncate group-hover:text-slate-400 transition-colors">
+          {track.artist || 'Unknown Artist'}
+        </p>
+      </div>
     </motion.div>
   );
 }

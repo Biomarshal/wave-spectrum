@@ -50,62 +50,67 @@ export default function PlayerProvider() {
     totalPlayTimeRef.current = 0;
   }, [currentTrack, isAuthenticated, uid]);
 
-  // Handle Play/Pause logic
+  const lastTrackId = useRef<string | null>(null);
+  const playPromiseRef = useRef<Promise<void> | null>(null);
+
+  // Consolidated Audio Logic
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
 
+    const isTrackChanging = lastTrackId.current !== currentTrack.id;
+
+    if (isTrackChanging) {
+      // 1. Pause and cleanup old track
+      audio.pause();
+      flushStats();
+      
+      // 2. Reset state for new track
+      totalPlayTimeRef.current = 0;
+      playStartRef.current = null;
+      setError(null);
+      setBuffering(true);
+      
+      // 3. Load new source
+      audio.src = currentTrack.audioUrl;
+      audio.load();
+      lastTrackId.current = currentTrack.id;
+    }
+
     if (isPlaying) {
+      // 4. Safely trigger play
+      // We check playPromiseRef to ensure we don't spam play() calls
       const playPromise = audio.play();
+      playPromiseRef.current = playPromise;
+
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            playStartRef.current = Date.now();
-            setError(null);
+            if (playPromiseRef.current === playPromise) {
+              playStartRef.current = Date.now();
+              setError(null);
+              setBuffering(false);
+            }
           })
           .catch((error) => {
-            console.error('Playback error:', error);
-            // Don't pause automatically on first failure, let error handler deal with it
-            if (error.name !== 'AbortError') {
-              setError('Failed to play audio. Please check your connection.');
-              pause();
+            // Ignore AbortError as it's just a sign of rapid switching
+            if (error.name === 'AbortError') {
+              return;
             }
+            console.error('Playback error:', error);
+            setError('Failed to play audio. Please check your connection.');
+            pause();
           });
       }
     } else {
+      // 5. Handle pause
       audio.pause();
       if (playStartRef.current) {
         totalPlayTimeRef.current += Math.floor((Date.now() - playStartRef.current) / 1000);
         playStartRef.current = null;
       }
     }
-  }, [isPlaying, currentTrack?.id, pause, setError]);
-
-  // Load new track
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
-
-    flushStats();
-    
-    // Reset state for new track
-    totalPlayTimeRef.current = 0;
-    playStartRef.current = null;
-    setError(null);
-    setBuffering(true);
-
-    audio.src = currentTrack.audioUrl;
-    audio.load();
-
-    if (isPlaying) {
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          playStartRef.current = Date.now();
-        }).catch(() => {});
-      }
-    }
-  }, [currentTrack?.id, flushStats, setBuffering, setError]);
+  }, [isPlaying, currentTrack?.id, currentTrack?.audioUrl, pause, setError, setBuffering, flushStats]);
 
   // Volume sync
   useEffect(() => {

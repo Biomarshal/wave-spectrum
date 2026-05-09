@@ -1,7 +1,14 @@
 'use client';
 
 import { memo } from 'react';
-import { Home, Search, Library, User } from 'lucide-react';
+import { 
+  Home, 
+  Search, 
+  Library, 
+  User, 
+  UploadCloud, 
+  Settings 
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface MobileNavProps {
@@ -10,23 +17,30 @@ interface MobileNavProps {
   hasPlayer: boolean;
 }
 
-const navItems = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'search', label: 'Search', icon: Search },
-  { id: 'library', label: 'Library', icon: Library },
-  { id: 'profile', label: 'Profile', icon: User },
-];
+import { useAuthStore } from '@/store/useAuthStore';
 
 function MobileNav({ activeView, onNavigate, hasPlayer }: MobileNavProps) {
+  const { role } = useAuthStore();
+
+  const listenerItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'search', label: 'Search', icon: Search },
+    { id: 'library', label: 'Library', icon: Library },
+    { id: 'profile', label: 'Profile', icon: User },
+  ];
+
+  const adminItems = [
+    { id: 'dashboard', label: 'Overview', icon: Home },
+    { id: 'upload', label: 'Upload', icon: UploadCloud },
+    { id: 'manage', label: 'Manage', icon: Library },
+    { id: 'profile', label: 'Settings', icon: Settings },
+  ];
+
+  const navItems = role === 'admin' ? adminItems : listenerItems;
+
   return (
     <nav
-      className="fixed left-0 right-0 z-40 md:hidden safe-bottom"
-      style={{
-        bottom: hasPlayer ? 'var(--player-height)' : 0,
-        background: 'linear-gradient(to top, rgba(8, 10, 16, 0.98), rgba(8, 10, 16, 0.92))',
-        backdropFilter: 'blur(12px)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.04)',
-      }}
+      className="fixed left-0 right-0 bottom-0 z-40 md:hidden safe-bottom bg-[#080a10]/95 backdrop-blur-xl border-t border-white/[0.04] px-2"
     >
       <div className="flex items-center justify-around" style={{ height: 'var(--mobile-nav-height)' }}>
         {navItems.map((item) => {
@@ -36,26 +50,26 @@ function MobileNav({ activeView, onNavigate, hasPlayer }: MobileNavProps) {
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className="flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 min-w-[64px] relative"
+              className="flex flex-col items-center justify-center gap-1 px-2 py-2 min-w-[60px] relative transition-all active:scale-90"
             >
               <div className="relative">
                 <Icon
                   size={22}
-                  className={`transition-colors duration-200 ${
-                    isActive ? 'text-[#e05297]' : 'text-slate-500'
+                  className={`transition-all duration-300 ${
+                    isActive ? 'text-[#e05297] drop-shadow-[0_0_8px_rgba(224,82,151,0.4)]' : 'text-slate-500 hover:text-slate-300'
                   }`}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#e05297]"
+                    className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#e05297] shadow-[0_0_10px_#e05297]"
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 )}
               </div>
               <span
-                className={`text-[10px] font-medium transition-colors duration-200 ${
+                className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${
                   isActive ? 'text-[#e05297]' : 'text-slate-600'
                 }`}
               >

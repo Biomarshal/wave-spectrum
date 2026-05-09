@@ -66,18 +66,31 @@ export const getWeeklyStats = async (uid: string) => {
   if (!uid) return 0;
 
   try {
-    const statsRef = collection(db, 'users', uid, 'dailyStats');
-    const q = query(statsRef, orderBy('__name__', 'desc'), limit(7));
-    const querySnapshot = await getDocs(q);
+    // Calculate the last 7 days (including today)
+    const dates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    });
+
+    // Fetch all 7 docs in parallel - No index required for getDoc
+    const promises = dates.map(date => 
+      getDoc(doc(db, 'users', uid, 'dailyStats', date))
+    );
+    
+    const snapshots = await Promise.all(promises);
     
     let totalSeconds = 0;
-    querySnapshot.forEach((doc) => {
-      totalSeconds += doc.data().total || 0;
+    snapshots.forEach((s) => {
+      if (s.exists()) {
+        totalSeconds += s.data().total || 0;
+      }
     });
     
     return totalSeconds;
   } catch (error) {
-    console.error('Error fetching weekly stats:', error);
+    // If it's a Firestore error about indexes or anything else, log it clearly but don't crash
+    console.error('Weekly stats error (Falling back to 0):', error);
     return 0;
   }
 };

@@ -5,8 +5,10 @@ import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { getWeeklyStats, formatDuration } from '@/lib/stats';
-import { User, Mail, Calendar, Clock, BarChart2, Edit2, Check, X, Headphones } from 'lucide-react';
+import { User, Mail, Calendar, Clock, BarChart2, Edit2, Check, X, Headphones, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/store/useAuthStore';
+import { usePlayerStore } from '@/store/playerStore';
 
 import { UserProfile } from '@/lib/userService';
 
@@ -19,6 +21,14 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const logout = useAuthStore((s) => s.logout);
+  const clearPlayer = usePlayerStore((s) => s.clearPlayer);
+
+  const handleLogout = () => {
+    clearPlayer();
+    logout();
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -103,24 +113,26 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto py-4 px-2 sm:px-0">
       {/* Profile header */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 sm:p-6 md:p-8 mb-4 md:mb-6">
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#7c3aed] to-[#e05297] flex items-center justify-center shrink-0 shadow-lg shadow-[#7c3aed]/15">
-            <User size={36} className="text-white/80 sm:hidden" />
-            <User size={40} className="text-white/80 hidden sm:block" />
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 sm:p-10 mb-6 relative overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#e05297]/10 rounded-full blur-3xl" />
+        
+        <div className="flex flex-col items-center sm:items-start sm:flex-row gap-6 sm:gap-8 relative z-10">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-[#7c3aed] to-[#e05297] flex items-center justify-center shrink-0 shadow-xl shadow-[#7c3aed]/20">
+            <User size={48} className="text-white/90" />
           </div>
 
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-2">
+          <div className="flex-1 text-center sm:text-left flex flex-col justify-center">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-3">
               <AnimatePresence mode="wait">
                 {isEditing ? (
                   <motion.div
                     key="editing"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     className="flex items-center gap-2"
                   >
                     <input
@@ -128,129 +140,154 @@ export default function Profile() {
                       type="text"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
-                      className="bg-white/[0.06] border border-white/[0.1] rounded-lg px-3 py-1.5 text-lg sm:text-xl font-bold text-white focus:outline-none focus:ring-1 focus:ring-[#e05297]/40 w-44 sm:w-48"
+                      className="bg-white/[0.08] border border-white/[0.1] rounded-xl px-4 py-2 text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#e05297]/50 w-48 sm:w-64 transition-all"
                       autoFocus
                       onKeyDown={(e) => { if (e.key === 'Enter') handleUpdateName(); }}
                     />
                     <button
                       onClick={handleUpdateName}
                       disabled={isUpdating}
-                      className="p-2 bg-[#e05297] rounded-lg text-white hover:bg-[#e05297]/80 transition-colors"
+                      className="p-2.5 bg-[#e05297] rounded-xl text-white hover:bg-[#e05297]/80 transition-all hover:scale-105 active:scale-95"
                     >
                       {isUpdating ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
-                        <Check size={16} />
+                        <Check size={20} />
                       )}
                     </button>
                     <button
                       onClick={() => { setIsEditing(false); setNewName(userData?.name || ''); }}
-                      className="p-2 bg-white/[0.06] rounded-lg text-slate-400 hover:text-white transition-colors"
+                      className="p-2.5 bg-white/[0.06] rounded-xl text-slate-400 hover:text-white transition-all"
                     >
-                      <X size={16} />
+                      <X size={20} />
                     </button>
                   </motion.div>
                 ) : (
                   <motion.div
                     key="display"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center gap-2"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex items-center gap-3"
                   >
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">
+                    <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                       {userData?.name || 'User'}
                     </h2>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="p-1.5 text-slate-500 hover:text-white transition-colors"
+                      className="p-2 text-slate-400 hover:text-[#e05297] transition-colors rounded-full hover:bg-white/[0.04]"
                     >
-                      <Edit2 size={16} />
+                      <Edit2 size={18} />
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
 
               <span
-                className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase ${
+                className={`text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
                   userData?.role === 'admin'
-                    ? 'bg-[#7c3aed]/20 text-[#7c3aed]'
-                    : 'bg-[#e05297]/20 text-[#e05297]'
+                    ? 'bg-[#7c3aed]/20 text-[#7c3aed] border border-[#7c3aed]/30'
+                    : 'bg-[#e05297]/20 text-[#e05297] border border-[#e05297]/30'
                 }`}
               >
                 {userData?.role || 'Listener'}
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-sm text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <Mail size={14} className="text-slate-500" />
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-y-2 gap-x-5 text-sm font-medium text-slate-400">
+              <span className="flex items-center gap-2">
+                <Mail size={16} className="text-slate-500" />
                 {userData?.email}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Calendar size={14} className="text-slate-500" />
+              <span className="flex items-center gap-2">
+                <Calendar size={16} className="text-slate-500" />
                 Joined {getJoinedDate()}
               </span>
-
             </div>
           </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-[#e05297]/10 flex items-center justify-center text-[#e05297]">
-              <Clock size={20} />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Today</p>
-              <p className="text-xl font-bold text-white">{formatDuration(todayTime)}</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <motion.div 
+          whileHover={{ y: -2 }}
+          className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 transition-all hover:bg-white/[0.05]"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-[#e05297]/10 flex items-center justify-center text-[#e05297] border border-[#e05297]/20">
+                <Clock size={24} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Today's Session</p>
+                <p className="text-2xl font-black text-white">{formatDuration(todayTime)}</p>
+              </div>
             </div>
           </div>
-          <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-white/[0.06] h-2 rounded-full overflow-hidden mb-2">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((todayTime / 3600) * 100, 100)}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-[#e05297] rounded-full"
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="h-full bg-gradient-to-r from-[#e05297] to-[#ff7eb3] rounded-full"
             />
           </div>
-          <p className="text-[11px] text-slate-500 mt-2">Goal: 1 hour</p>
-        </div>
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">Goal: 1 hour</p>
+        </motion.div>
 
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-[#7c3aed]/10 flex items-center justify-center text-[#7c3aed]">
-              <BarChart2 size={20} />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">This Week</p>
-              <p className="text-xl font-bold text-white">{formatDuration(weeklyTime)}</p>
+        <motion.div 
+          whileHover={{ y: -2 }}
+          className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 transition-all hover:bg-white/[0.05]"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-[#7c3aed]/10 flex items-center justify-center text-[#7c3aed] border border-[#7c3aed]/20">
+                <BarChart2 size={24} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Weekly Average</p>
+                <p className="text-2xl font-black text-white">{formatDuration(weeklyTime)}</p>
+              </div>
             </div>
           </div>
-          <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-white/[0.06] h-2 rounded-full overflow-hidden mb-2">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((weeklyTime / 25200) * 100, 100)}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-[#7c3aed] rounded-full"
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="h-full bg-gradient-to-r from-[#7c3aed] to-[#a78bfa] rounded-full"
             />
           </div>
-          <p className="text-[11px] text-slate-500 mt-2">Goal: 7 hours</p>
-        </div>
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">Goal: 7 hours</p>
+        </motion.div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 md:p-6">
-        <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-          <Headphones size={16} className="text-[#e05297]" />
-          Recent Tracks
-        </h3>
-        <p className="text-sm text-slate-500 text-center py-8">
-          Your listening history will appear here as you stream.
-        </p>
+      {/* Recent Activity & Sign Out */}
+      <div className="space-y-4">
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 uppercase tracking-tight">
+            <Headphones size={20} className="text-[#e05297]" />
+            Listening Activity
+          </h3>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-white/[0.02] flex items-center justify-center mb-4 border border-white/[0.04]">
+              <Headphones size={24} className="text-slate-600" />
+            </div>
+            <p className="text-sm font-medium text-slate-500 max-w-[200px]">
+              Your streaming history will appear here once you start playing tracks.
+            </p>
+          </div>
+        </div>
+
+        {/* Sign Out Button */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold hover:bg-red-500/20 transition-all active:scale-[0.98] mt-4"
+        >
+          <LogOut size={20} />
+          Sign Out of Wave Spectrum
+        </button>
       </div>
     </div>
   );

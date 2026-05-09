@@ -8,6 +8,8 @@ import MiniPlayer from '@/components/player/MiniPlayer';
 import FullPlayer from '@/components/player/FullPlayer';
 import { usePlayerStore } from '@/store/playerStore';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuthStore } from '@/store/useAuthStore';
+import DesktopSidebar from './DesktopSidebar';
 
 interface AppShellProps {
   activeView: string;
@@ -16,102 +18,50 @@ interface AppShellProps {
 }
 
 export default function AppShell({ activeView, onNavigate, children }: AppShellProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const { role } = useAuthStore();
 
   const hasPlayer = !!currentTrack;
 
-  // Handle navigation with mobile menu close
+  // Handle navigation
   const handleNavigate = (view: string) => {
     onNavigate(view);
-    setMobileMenuOpen(false);
-  };
-
-  // Close mobile menu on resize to desktop
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Calculate bottom padding for content
-  const getContentPadding = () => {
-    let padding = 0;
-    if (hasPlayer) padding += 72; // player height
-    return padding;
   };
 
   return (
     <div className="flex h-screen h-[100dvh] bg-[#080a10] text-white overflow-hidden relative">
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex">
-        <Sidebar
-          activeView={activeView}
-          onNavigate={onNavigate}
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-      </div>
-
-      {/* Mobile menu overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 z-[60] md:hidden"
-            />
-            <motion.div
-              initial={{ x: -260 }}
-              animate={{ x: 0 }}
-              exit={{ x: -260 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 z-[70] md:hidden"
-            >
-              <Sidebar
-                activeView={activeView}
-                onNavigate={handleNavigate}
-                collapsed={false}
-                onToggle={() => setMobileMenuOpen(false)}
-              />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <DesktopSidebar 
+        activeView={activeView} 
+        onNavigate={handleNavigate} 
+        role={role} 
+      />
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header */}
-        <Header onMenuToggle={() => setMobileMenuOpen(true)} />
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* Mobile header (visible on all screens) */}
+        <Header />
 
         {/* Scrollable content */}
         <main
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto custom-scrollbar relative md:[--main-pb:calc(var(--player-height)+40px)]"
           style={{
             paddingBottom: hasPlayer 
-              ? 'calc(var(--player-height) + var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px))' 
-              : 'calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px))',
+              ? 'var(--main-pb, calc(var(--player-height) + var(--mobile-nav-height) + 24px + env(safe-area-inset-bottom, 0px)))' 
+              : 'var(--main-pb, calc(var(--mobile-nav-height) + 24px + env(safe-area-inset-bottom, 0px)))',
           }}
         >
-          <div className="md:pb-[80px]">
+          <div className="px-4 sm:px-8 md:px-10 py-6 md:py-10 max-w-7xl mx-auto w-full">
             {children}
           </div>
         </main>
       </div>
 
-      {/* Mini Player */}
+      {/* Mini Player - Positioned above bottom nav on mobile, or bottom-right on desktop */}
       <MiniPlayer onExpand={() => setShowFullPlayer(true)} />
 
-      {/* Mobile bottom navigation */}
+      {/* Bottom navigation - Mobile only */}
       <MobileNav
         activeView={activeView}
         onNavigate={handleNavigate}

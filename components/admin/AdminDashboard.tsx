@@ -134,7 +134,7 @@ export default function AdminDashboard() {
               {/* Quick song preview */}
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-white mb-4">Recent Tracks</h2>
-                <SongGrid refreshTrigger={refreshTrigger} />
+                <SongGrid refreshTrigger={refreshTrigger} currentView="home" />
               </div>
             </motion.div>
           )}
