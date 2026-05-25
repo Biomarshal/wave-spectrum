@@ -21,10 +21,10 @@ function SongCard({ track, isActive, isPlaying, onPlay, index }: SongCardProps) 
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: Math.min(index * 0.04, 0.3) }}
       onClick={onPlay}
-      className={`group relative rounded-2xl p-3 sm:p-4 cursor-pointer transition-all duration-300 border border-transparent ${
+      className={`group relative rounded-2xl p-3 sm:p-4 cursor-pointer transition-all duration-300 border theme-transition ${
         isActive
-          ? 'bg-white/[0.08] border-white/10 shadow-[0_8px_24px_rgba(224,82,151,0.15)] ring-1 ring-[#e05297]/30'
-          : 'bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/5 hover:shadow-xl hover:-translate-y-1'
+          ? 'bg-[var(--color-bg-hover)] border-[#e05297]/40 shadow-[0_8px_24px_rgba(224,82,151,0.15)] ring-1 ring-[#e05297]/30'
+          : 'bg-[var(--color-bg-elevated)] border-[var(--color-border)] hover:bg-[var(--color-bg-hover)] hover:border-[var(--color-border)] hover:shadow-xl hover:-translate-y-1'
       }`}
       role="button"
       tabIndex={0}
@@ -80,12 +80,12 @@ function SongCard({ track, isActive, isPlaying, onPlay, index }: SongCardProps) 
       <div className="space-y-1">
         <h3
           className={`text-sm font-bold truncate tracking-tight transition-colors ${
-            isActive ? 'text-[#e05297]' : 'text-white group-hover:text-white'
+            isActive ? 'text-[#e05297]' : 'text-[var(--color-text-primary)] group-hover:text-[var(--color-text-primary)]'
           }`}
         >
           {track.title}
         </h3>
-        <p className="text-xs font-medium text-slate-500 truncate group-hover:text-slate-400 transition-colors">
+        <p className="text-xs font-medium text-[var(--color-text-secondary)] truncate group-hover:text-[var(--color-text-primary)] transition-colors">
           {track.artist || 'Unknown Artist'}
         </p>
       </div>

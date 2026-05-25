@@ -131,7 +131,7 @@ export default function Upload({ onUploadComplete }: { onUploadComplete: () => v
   };
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-6 space-y-5 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl theme-transition">
       {error && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -152,66 +152,66 @@ export default function Upload({ onUploadComplete }: { onUploadComplete: () => v
           disabled={isUploading}
           className="absolute inset-0 opacity-0 cursor-pointer z-10"
         />
-        <div className="w-full border-2 border-dashed border-white/[0.08] rounded-lg p-8 flex flex-col items-center justify-center text-center transition-colors group-hover:border-[#e05297]/40 group-hover:bg-[#e05297]/[0.02]">
+        <div className="w-full border-2 border-dashed border-[var(--color-border)] rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all group-hover:border-[#e05297]/40 group-hover:bg-[#e05297]/[0.02]">
           <div className="mb-3">
             <AppLogo size={28} />
           </div>
-          <p className="text-sm font-medium text-slate-400 group-hover:text-white transition-colors">
+          <p className="text-sm font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">
             {file ? file.name : 'Click to select MP3'}
           </p>
-          <p className="text-xs text-slate-600 mt-1">MP3 only</p>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">MP3 only</p>
         </div>
       </div>
 
       {/* Title */}
       <div>
-        <label className="block text-xs text-slate-500 font-medium mb-1">Title</label>
+        <label className="block text-xs text-[var(--color-text-muted)] font-medium mb-1">Title</label>
         <input
           type="text"
           placeholder="Track title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isUploading}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#e05297]/40"
+          className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[#e05297]/40 theme-transition"
         />
       </div>
 
       {/* Artist */}
       <div>
-        <label className="block text-xs text-slate-500 font-medium mb-1">Artist</label>
+        <label className="block text-xs text-[var(--color-text-muted)] font-medium mb-1">Artist</label>
         <input
           type="text"
           placeholder="Artist name"
           value={artist}
           onChange={(e) => setArtist(e.target.value)}
           disabled={isUploading}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]/40"
+          className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[#7c3aed]/40 theme-transition"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {/* Album */}
         <div>
-          <label className="block text-xs text-slate-500 font-medium mb-1">Album</label>
+          <label className="block text-xs text-[var(--color-text-muted)] font-medium mb-1">Album</label>
           <input
             type="text"
             placeholder="Album name"
             value={album}
             onChange={(e) => setAlbum(e.target.value)}
             disabled={isUploading}
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#e05297]/40"
+            className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[#e05297]/40 theme-transition"
           />
         </div>
         {/* Year */}
         <div>
-          <label className="block text-xs text-slate-500 font-medium mb-1">Year</label>
+          <label className="block text-xs text-[var(--color-text-muted)] font-medium mb-1">Year</label>
           <input
             type="text"
             placeholder="Year"
             value={year}
             onChange={(e) => setYear(e.target.value)}
             disabled={isUploading}
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-[#7c3aed]/40"
+            className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[#7c3aed]/40 theme-transition"
           />
         </div>
       </div>
@@ -219,11 +219,11 @@ export default function Upload({ onUploadComplete }: { onUploadComplete: () => v
       <button
         onClick={handleUpload}
         disabled={isUploading}
-        className="w-full py-2.5 bg-white text-black rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors disabled:opacity-50"
+        className="w-full py-2.5 bg-[var(--color-text-primary)] text-[var(--color-bg-base)] rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 theme-transition"
       >
         {isUploading ? (
           <>
-            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-[var(--color-bg-base)]/20 border-t-[var(--color-bg-base)] rounded-full animate-spin" />
             <span>Uploading...</span>
           </>
         ) : (

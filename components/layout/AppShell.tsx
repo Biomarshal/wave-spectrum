@@ -30,7 +30,7 @@ export default function AppShell({ activeView, onNavigate, children }: AppShellP
   };
 
   return (
-    <div className="flex h-screen h-[100dvh] bg-[#080a10] text-white overflow-hidden relative">
+    <div className="flex h-screen h-[100dvh] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] overflow-hidden relative theme-transition">
       {/* Desktop Sidebar - Hidden on mobile */}
       <DesktopSidebar 
         activeView={activeView} 
@@ -45,14 +45,13 @@ export default function AppShell({ activeView, onNavigate, children }: AppShellP
 
         {/* Scrollable content */}
         <main
-          className="flex-1 overflow-y-auto custom-scrollbar relative md:[--main-pb:calc(var(--player-height)+40px)]"
-          style={{
-            paddingBottom: hasPlayer 
-              ? 'var(--main-pb, calc(var(--player-height) + var(--mobile-nav-height) + 24px + env(safe-area-inset-bottom, 0px)))' 
-              : 'var(--main-pb, calc(var(--mobile-nav-height) + 24px + env(safe-area-inset-bottom, 0px)))',
-          }}
+          className={`flex-1 overflow-y-auto custom-scrollbar relative theme-transition ${
+            hasPlayer 
+              ? 'pb-[160px] md:pb-[120px]' 
+              : 'pb-[80px] md:pb-[24px]'
+          }`}
         >
-          <div className="px-4 sm:px-8 md:px-10 py-6 md:py-10 max-w-7xl mx-auto w-full">
+          <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-[1600px] mx-auto w-full">
             {children}
           </div>
         </main>

@@ -40,7 +40,7 @@ function MobileNav({ activeView, onNavigate, hasPlayer }: MobileNavProps) {
 
   return (
     <nav
-      className="fixed left-0 right-0 bottom-0 z-40 md:hidden safe-bottom bg-[#080a10]/95 backdrop-blur-xl border-t border-white/[0.04] px-2"
+      className="fixed left-0 right-0 bottom-0 z-40 md:hidden safe-bottom bg-[var(--color-bg-base)]/95 backdrop-blur-xl border-t border-[var(--color-border)] px-2 theme-transition"
     >
       <div className="flex items-center justify-around" style={{ height: 'var(--mobile-nav-height)' }}>
         {navItems.map((item) => {
@@ -56,7 +56,7 @@ function MobileNav({ activeView, onNavigate, hasPlayer }: MobileNavProps) {
                 <Icon
                   size={22}
                   className={`transition-all duration-300 ${
-                    isActive ? 'text-[#e05297] drop-shadow-[0_0_8px_rgba(224,82,151,0.4)]' : 'text-slate-500 hover:text-slate-300'
+                    isActive ? 'text-[#e05297] drop-shadow-[0_0_8px_rgba(224,82,151,0.4)]' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                   }`}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
@@ -70,7 +70,7 @@ function MobileNav({ activeView, onNavigate, hasPlayer }: MobileNavProps) {
               </div>
               <span
                 className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${
-                  isActive ? 'text-[#e05297]' : 'text-slate-600'
+                  isActive ? 'text-[#e05297]' : 'text-[var(--color-text-muted)]'
                 }`}
               >
                 {item.label}

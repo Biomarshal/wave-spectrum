@@ -91,218 +91,216 @@ export default function AdminDashboard() {
 
   return (
     <AppShell activeView={activeTab} onNavigate={setActiveTab}>
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-        <AnimatePresence mode="wait">
-          {/* Dashboard */}
-          {activeTab === 'dashboard' && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Overview</h1>
-                <p className="text-sm text-slate-500">Platform metrics at a glance.</p>
+      <AnimatePresence mode="wait">
+        {/* Dashboard */}
+        {activeTab === 'dashboard' && (
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-1">Overview</h1>
+              <p className="text-sm text-[var(--color-text-secondary)]">Platform metrics at a glance.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-8">
+              {[
+                { label: 'Tracks', value: songs.length, color: 'text-[#e05297]', bg: 'bg-[#e05297]/10', icon: Headphones },
+                { label: 'Users', value: users.length, color: 'text-[#7c3aed]', bg: 'bg-[#7c3aed]/10', icon: User },
+                { label: 'Status', value: 'Online', color: 'text-emerald-400', bg: 'bg-emerald-400/10', icon: TrendingUp },
+              ].map((s, i) => {
+                const Icon = s.icon;
+                return (
+                  <div
+                    key={i}
+                    className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl p-5 md:p-6 theme-transition"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center ${s.color}`}>
+                        <Icon size={20} />
+                      </div>
+                      <p className="text-xs text-[var(--color-text-secondary)] font-medium uppercase tracking-wider">
+                        {s.label}
+                      </p>
+                    </div>
+                    <p className={`text-2xl md:text-3xl font-bold ${s.color}`}>{s.value}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick song preview */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Recent Tracks</h2>
+              <SongGrid refreshTrigger={refreshTrigger} currentView="home" />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Upload */}
+        {activeTab === 'upload' && (
+          <motion.div
+            key="upload"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="max-w-3xl"
+          >
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-1">Upload Track</h1>
+              <p className="text-sm text-[var(--color-text-muted)]">Add new audio to the library.</p>
+            </div>
+            <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl overflow-hidden theme-transition">
+              <Upload
+                onUploadComplete={() => {
+                  setActiveTab('manage');
+                  setRefreshTrigger((p) => p + 1);
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Manage */}
+        {activeTab === 'manage' && (
+          <motion.div
+            key="manage"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-1">Track Library</h1>
+                <p className="text-sm text-[var(--color-text-secondary)]">Manage uploaded tracks.</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-8">
-                {[
-                  { label: 'Tracks', value: songs.length, color: 'text-[#e05297]', bg: 'bg-[#e05297]/10', icon: Headphones },
-                  { label: 'Users', value: users.length, color: 'text-[#7c3aed]', bg: 'bg-[#7c3aed]/10', icon: User },
-                  { label: 'Status', value: 'Online', color: 'text-emerald-400', bg: 'bg-emerald-400/10', icon: TrendingUp },
-                ].map((s, i) => {
-                  const Icon = s.icon;
-                  return (
-                    <div
-                      key={i}
-                      className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 md:p-6"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center ${s.color}`}>
-                          <Icon size={20} />
+              <button
+                onClick={() => setActiveTab('upload')}
+                className="bg-[var(--color-text-primary)] text-[var(--color-bg-base)] text-sm font-semibold px-4 py-2 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 w-fit theme-transition"
+              >
+                <UploadCloud size={16} /> Upload
+              </button>
+            </div>
+
+            <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl overflow-hidden overflow-x-auto theme-transition">
+              <table className="w-full text-left text-sm min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-[var(--color-border)] text-[var(--color-text-muted)]">
+                    <th className="px-4 md:px-5 py-3 font-medium">Title</th>
+                    <th className="px-4 md:px-5 py-3 font-medium">Artist</th>
+                    <th className="px-4 md:px-5 py-3 font-medium hidden md:table-cell">Date</th>
+                    <th className="px-4 md:px-5 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-border)]/50">
+                  {songs.map((song) => (
+                    <tr key={song.id} className="hover:bg-[var(--color-bg-hover)] transition-colors group">
+                      <td className="px-4 md:px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <AppLogo size={14} />
+                          <span className="font-medium text-[var(--color-text-primary)] truncate max-w-[120px] sm:max-w-none">{song.title}</span>
                         </div>
-                        <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
-                          {s.label}
-                        </p>
-                      </div>
-                      <p className={`text-2xl md:text-3xl font-bold ${s.color}`}>{s.value}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Quick song preview */}
-              <div className="mb-8">
-                <h2 className="text-lg font-semibold text-white mb-4">Recent Tracks</h2>
-                <SongGrid refreshTrigger={refreshTrigger} currentView="home" />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Upload */}
-          {activeTab === 'upload' && (
-            <motion.div
-              key="upload"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-3xl"
-            >
-              <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Upload Track</h1>
-                <p className="text-sm text-slate-500">Add new audio to the library.</p>
-              </div>
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
-                <Upload
-                  onUploadComplete={() => {
-                    setActiveTab('manage');
-                    setRefreshTrigger((p) => p + 1);
-                  }}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Manage */}
-          {activeTab === 'manage' && (
-            <motion.div
-              key="manage"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Track Library</h1>
-                  <p className="text-sm text-slate-500">Manage uploaded tracks.</p>
-                </div>
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className="bg-white text-black text-sm font-semibold px-4 py-2 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition-colors flex items-center gap-2 w-fit"
-                >
-                  <UploadCloud size={16} /> Upload
-                </button>
-              </div>
-
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden overflow-x-auto">
-                <table className="w-full text-left text-sm min-w-[500px]">
-                  <thead>
-                    <tr className="border-b border-white/[0.06] text-slate-500">
-                      <th className="px-4 md:px-5 py-3 font-medium">Title</th>
-                      <th className="px-4 md:px-5 py-3 font-medium">Artist</th>
-                      <th className="px-4 md:px-5 py-3 font-medium hidden md:table-cell">Date</th>
-                      <th className="px-4 md:px-5 py-3 font-medium text-right">Actions</th>
+                      </td>
+                      <td className="px-4 md:px-5 py-3 text-[var(--color-text-secondary)]">{song.artist || 'Unknown'}</td>
+                      <td className="px-4 md:px-5 py-3 text-[var(--color-text-muted)] hidden md:table-cell">
+                        {new Date(song.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 md:px-5 py-3 text-right">
+                        <div className="flex justify-end gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              setEditingSong(song);
+                              setEditTitle(song.title);
+                              setEditArtist(song.artist || '');
+                            }}
+                            className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] rounded-md hover:bg-[var(--color-bg-hover)] transition-colors"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(song)}
+                            className="p-1.5 text-[var(--color-text-muted)] hover:text-red-500 rounded-md hover:bg-red-500/[0.06] transition-colors"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.04]">
-                    {songs.map((song) => (
-                      <tr key={song.id} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="px-4 md:px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <AppLogo size={14} />
-                            <span className="font-medium text-white truncate max-w-[120px] sm:max-w-none">{song.title}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 md:px-5 py-3 text-slate-400">{song.artist || 'Unknown'}</td>
-                        <td className="px-4 md:px-5 py-3 text-slate-500 hidden md:table-cell">
-                          {new Date(song.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 md:px-5 py-3 text-right">
-                          <div className="flex justify-end gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => {
-                                setEditingSong(song);
-                                setEditTitle(song.title);
-                                setEditArtist(song.artist || '');
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/[0.06] transition-colors"
-                            >
-                              <Edit2 size={15} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(song)}
-                              className="p-1.5 text-slate-400 hover:text-red-400 rounded-md hover:bg-red-500/[0.06] transition-colors"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {songs.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="px-5 py-10 text-center text-slate-500">
-                          No tracks uploaded yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          )}
+                  ))}
+                  {songs.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="px-5 py-10 text-center text-[var(--color-text-muted)]">
+                        No tracks uploaded yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
 
-          {/* Users */}
-          {activeTab === 'users' && (
-            <motion.div
-              key="users"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Users</h1>
-                <p className="text-sm text-slate-500">Registered accounts.</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                {users.length === 0 ? (
-                  <p className="col-span-full text-center py-10 text-slate-500">
-                    No users found.
-                  </p>
-                ) : (
-                  users.map((u) => (
-                    <div
-                      key={u.id}
-                      className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 md:p-5 flex items-center gap-4"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center text-slate-400">
-                        <User size={20} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-white truncate">
-                          {u.name || 'Anonymous'}
-                        </p>
-                        <p className="text-xs text-slate-500 truncate">{u.email}</p>
-                      </div>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase shrink-0 ${
-                          u.role === 'admin'
-                            ? 'bg-[#7c3aed]/20 text-[#7c3aed]'
-                            : 'bg-[#e05297]/20 text-[#e05297]'
-                        }`}
-                      >
-                        {u.role}
-                      </span>
+        {/* Users */}
+        {activeTab === 'users' && (
+          <motion.div
+            key="users"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-1">Users</h1>
+              <p className="text-sm text-[var(--color-text-muted)]">Registered accounts.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              {users.length === 0 ? (
+                <p className="col-span-full text-center py-10 text-[var(--color-text-muted)]">
+                  No users found.
+                </p>
+              ) : (
+                users.map((u) => (
+                  <div
+                    key={u.id}
+                    className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl p-4 md:p-5 flex items-center gap-4 theme-transition"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[var(--color-bg-hover)] flex items-center justify-center text-[var(--color-text-secondary)]">
+                      <User size={20} />
                     </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+                        {u.name || 'Anonymous'}
+                      </p>
+                      <p className="text-xs text-[var(--color-text-muted)] truncate">{u.email}</p>
+                    </div>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase shrink-0 ${
+                        u.role === 'admin'
+                          ? 'bg-[#7c3aed]/20 text-[#7c3aed]'
+                          : 'bg-[#e05297]/20 text-[#e05297]'
+                      }`}
+                    >
+                      {u.role}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
 
-          {/* Profile */}
-          {activeTab === 'profile' && (
-            <motion.div
-              key="profile"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <Profile />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+        {/* Profile */}
+        {activeTab === 'profile' && (
+          <motion.div
+            key="profile"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <Profile />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit Modal */}
       <AnimatePresence>
@@ -317,49 +315,49 @@ export default function AdminDashboard() {
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 10 }}
-              className="bg-[#12151c] border border-white/[0.08] rounded-xl p-6 w-full max-w-md"
+              className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl p-6 w-full max-w-md theme-transition"
             >
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-white">Edit Track</h3>
+                <h3 className="text-lg font-bold text-[var(--color-text-primary)]">Edit Track</h3>
                 <button
                   onClick={() => setEditingSong(null)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-slate-500 font-medium mb-1">Title</label>
+                  <label className="block text-xs text-[var(--color-text-muted)] font-medium mb-1">Title</label>
                   <input
                     id="edit-song-title"
                     type="text"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#e05297]/40"
+                    className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[#e05297]/40 theme-transition"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 font-medium mb-1">Artist</label>
+                  <label className="block text-xs text-[var(--color-text-muted)] font-medium mb-1">Artist</label>
                   <input
                     id="edit-song-artist"
                     type="text"
                     value={editArtist}
                     onChange={(e) => setEditArtist(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#e05297]/40"
+                    className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[#e05297]/40 theme-transition"
                   />
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setEditingSong(null)}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/[0.04] transition-colors"
+                  className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleEdit}
-                  className="flex-1 py-2.5 bg-white text-black rounded-lg text-sm font-semibold hover:bg-slate-200 active:bg-slate-300 transition-colors"
+                  className="flex-1 py-2.5 bg-[var(--color-text-primary)] text-[var(--color-bg-base)] rounded-lg text-sm font-semibold hover:opacity-90 active:scale-95 transition-all theme-transition"
                 >
                   Save
                 </button>

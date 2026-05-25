@@ -10,10 +10,10 @@ interface HeaderProps {
 
 function Header({ title }: HeaderProps) {
   return (
-    <header className="flex items-center h-14 px-4 sm:px-6 border-b border-white/[0.04] shrink-0 bg-[#080a10]/80 backdrop-blur-md sticky top-0 z-30">
+    <header className="flex md:hidden items-center h-14 px-4 sm:px-6 border-b border-[var(--color-border)] shrink-0 bg-[var(--color-bg-base)]/80 backdrop-blur-md sticky top-0 z-30 theme-transition">
       <div className="flex items-center gap-2">
         <AppLogo size={14} />
-        <span className="text-sm font-bold text-white tracking-tight uppercase">
+        <span className="text-sm font-bold text-[var(--color-text-primary)] tracking-tight uppercase">
           {title || 'Wave Spectrum'}
         </span>
       </div>

@@ -56,7 +56,17 @@ export default function PlayerProvider() {
   // Consolidated Audio Logic
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
+    if (!audio) return;
+
+    if (!currentTrack) {
+      audio.pause();
+      if (audio.src) {
+        audio.removeAttribute('src');
+        audio.load();
+      }
+      lastTrackId.current = null;
+      return;
+    }
 
     const isTrackChanging = lastTrackId.current !== currentTrack.id;
 
@@ -86,10 +96,12 @@ export default function PlayerProvider() {
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            if (playPromiseRef.current === playPromise) {
+            if (playPromiseRef.current === playPromise && currentTrack && isPlaying) {
               playStartRef.current = Date.now();
               setError(null);
               setBuffering(false);
+            } else {
+              audio.pause();
             }
           })
           .catch((error) => {
@@ -135,32 +147,40 @@ export default function PlayerProvider() {
   }, [flushStats]);
 
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
+    if (audioRef.current && currentTrack) {
       setCurrentTime(audioRef.current.currentTime);
     }
   };
 
   const handleLoadedMetadata = () => {
-    if (audioRef.current) {
+    if (audioRef.current && currentTrack) {
       setDuration(audioRef.current.duration);
       setBuffering(false);
     }
   };
 
-  const handleWaiting = () => setBuffering(true);
+  const handleWaiting = () => {
+    if (currentTrack) {
+      setBuffering(true);
+    }
+  };
+  
   const handlePlaying = () => {
-    setBuffering(false);
-    setError(null);
+    if (currentTrack) {
+      setBuffering(false);
+      setError(null);
+    }
   };
 
   const handleStalled = () => {
+    if (!currentTrack) return;
     // If stalled, try to recover after a short delay
     console.warn('Audio stalled, attempting recovery...');
     if (isPlaying) {
       setBuffering(true);
       if (recoveryTimeoutRef.current) clearTimeout(recoveryTimeoutRef.current);
       recoveryTimeoutRef.current = setTimeout(() => {
-        if (audioRef.current && isPlaying) {
+        if (audioRef.current && isPlaying && currentTrack) {
           audioRef.current.load();
           audioRef.current.currentTime = currentTime;
           audioRef.current.play().catch(() => {});
@@ -170,14 +190,17 @@ export default function PlayerProvider() {
   };
 
   const handleError = () => {
-    console.error('Audio error event fired');
+    const audio = audioRef.current;
+    if (!audio || !currentTrack || !audio.src || audio.src === window.location.href) {
+      return;
+    }
     setBuffering(false);
     setError('Audio playback failed. Retrying...');
     
     // Auto-retry once
     if (isPlaying) {
       setTimeout(() => {
-        if (audioRef.current && isPlaying) {
+        if (audioRef.current && isPlaying && currentTrack) {
           audioRef.current.load();
           audioRef.current.currentTime = currentTime;
           audioRef.current.play().catch(() => {
@@ -190,6 +213,7 @@ export default function PlayerProvider() {
   };
 
   const handleEnded = () => {
+    if (!currentTrack) return;
     flushStats();
     onTrackEnd();
   };

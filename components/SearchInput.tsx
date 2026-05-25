@@ -22,13 +22,14 @@ export default function SearchInput({ value, onChange }: Props) {
           w-full
           py-3
           pr-4
-          bg-zinc-900/80
-          border border-white/10
+          bg-[var(--color-bg-hover)]
+          border border-[var(--color-border)]
           rounded-xl
-          text-white
-          placeholder-gray-400
+          text-[var(--color-text-primary)]
+          placeholder-[var(--color-text-muted)]
           focus:outline-none
           focus:ring-2 focus:ring-purple-500
+          theme-transition
         "
         style={{ paddingLeft: "42px" }}
       />

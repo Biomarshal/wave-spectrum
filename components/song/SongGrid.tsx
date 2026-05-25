@@ -33,8 +33,19 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
   const debouncedSearch = useDebounce(searchQuery, 400);
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'name'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('wave_sort_by') as 'date' | 'name' | null;
+      if (saved === 'name' || saved === 'date') return saved;
+    }
+    return 'name';
+  });
   const [expandedArtist, setExpandedArtist] = useState<string | null>(null);
+  
+  // Persist sort selection
+  useEffect(() => {
+    localStorage.setItem('wave_sort_by', sortBy);
+  }, [sortBy]);
   
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -50,7 +61,7 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
   // Initial load
   const loadInitialSongs = useCallback(async () => {
     setLoading(true);
-    const { songs: fetched, lastVisible, hasMore: more } = await fetchSongs(null);
+    const { songs: fetched, lastVisible, hasMore: more } = await fetchSongs(null, 1000);
     setSongs(fetched);
     setLastDoc(lastVisible);
     setHasMore(more);
@@ -142,9 +153,9 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
         {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="rounded-2xl bg-white/[0.02] p-4">
+          <div key={i} className="rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] p-4 theme-transition">
             <div className="w-full aspect-square rounded-xl bg-white/[0.04] mb-4 animate-pulse" />
             <div className="h-5 bg-white/[0.04] rounded w-3/4 mb-3 animate-pulse" />
             <div className="h-4 bg-white/[0.04] rounded w-1/2 animate-pulse" />
@@ -157,11 +168,11 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
   if (songs.length === 0 && !loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center px-6">
-        <div className="w-20 h-20 rounded-3xl bg-white/[0.02] flex items-center justify-center mb-6 border border-white/[0.04]">
+        <div className="w-20 h-20 rounded-3xl bg-[var(--color-bg-hover)] flex items-center justify-center mb-6 border border-[var(--color-border)]">
           <AppLogo size={40} />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-3">Your library is quiet</h2>
-        <p className="text-sm text-slate-500 max-w-xs leading-relaxed">
+        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">Your library is quiet</h2>
+        <p className="text-sm text-[var(--color-text-secondary)] max-w-xs leading-relaxed">
           Looks like no tracks have been uploaded yet. Ask an admin to add some music.
         </p>
       </div>
@@ -169,7 +180,7 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         {/* Search */}
@@ -209,43 +220,80 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-white/[0.03] border border-white/[0.06] text-white text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#e05297]/40 cursor-pointer transition-all hover:bg-white/[0.05]"
+              className="
+                bg-[var(--color-bg-elevated)]
+                border border-[var(--color-border)]
+                text-[var(--color-text-primary)]
+                text-sm
+                rounded-[12px]
+                py-3
+                px-4
+                outline-none
+                focus:ring-2 focus:ring-[#e05297]/40
+                cursor-pointer
+                transition-all
+                hover:bg-[var(--color-bg-hover)]
+                theme-transition
+                font-medium
+              "
             >
-              <option value="name" className="bg-[#0d1017]">Sort by Name</option>
-              <option value="date" className="bg-[#0d1017]">Sort by Date Added</option>
+              <option value="name" className="bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]">Sort by Name</option>
+              <option value="date" className="bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]">Sort by Date Added</option>
             </select>
           </div>
         )}
       </div>
 
       {/* View Content */}
-      <div className="space-y-12">
-        {/* Search View: ONLY Recently Added */}
+      <div className="space-y-10">
+        {/* Search View: Search Results or Recently Added */}
         {currentView === 'search' && (
           <section>
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-[#e05297] rounded-full" />
-              Recently Added
+              {debouncedSearch ? `Search Results for "${debouncedSearch}"` : 'Recently Added'}
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-              {recentTracks.map((track, i) => (
-                <SongCard
-                  key={track.id}
-                  track={track}
-                  isActive={currentTrack?.id === track.id}
-                  isPlaying={currentTrack?.id === track.id && isPlaying}
-                  onPlay={() => handlePlay(track, recentTracks)}
-                  index={i}
-                />
-              ))}
-            </div>
+            
+            {debouncedSearch ? (
+              filteredAndSorted.length > 0 ? (
+                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                  {filteredAndSorted.map((track, i) => (
+                    <SongCard
+                      key={track.id}
+                      track={track}
+                      isActive={currentTrack?.id === track.id}
+                      isPlaying={currentTrack?.id === track.id && isPlaying}
+                      onPlay={() => handlePlay(track, filteredAndSorted)}
+                      index={i}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-[var(--color-text-muted)] text-sm font-medium">
+                  No matching tracks found. Try searching for a different name or artist.
+                </div>
+              )
+            ) : (
+              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                {recentTracks.map((track, i) => (
+                  <SongCard
+                    key={track.id}
+                    track={track}
+                    isActive={currentTrack?.id === track.id}
+                    isPlaying={currentTrack?.id === track.id && isPlaying}
+                    onPlay={() => handlePlay(track, recentTracks)}
+                    index={i}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         )}
 
         {/* Home View: ONLY All Tracks */}
         {currentView === 'home' && (
           <section>
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-[#7c3aed] rounded-full" />
               {debouncedSearch ? `Results for "${debouncedSearch}"` : 'All Tracks'}
             </h2>
@@ -253,7 +301,7 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
             {viewMode === 'grid' ? (
               <motion.div
                 layout
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
+                className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6"
               >
                 {filteredAndSorted.map((track, i) => (
                   <SongCard
@@ -272,22 +320,22 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
                   <div
                     key={track.id}
                     onClick={() => handlePlay(track, filteredAndSorted)}
-                    className={`flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer group ${currentTrack?.id === track.id ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'}`}
+                    className={`flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer group ${currentTrack?.id === track.id ? 'bg-[var(--color-bg-hover)]' : 'hover:bg-[var(--color-bg-hover)]'}`}
                   >
-                    <div className="w-10 text-slate-600 font-mono text-xs text-center group-hover:hidden">
+                    <div className="w-10 text-[var(--color-text-muted)] font-mono text-xs text-center group-hover:hidden">
                       {i + 1}
                     </div>
                     <div className="hidden group-hover:flex w-10 items-center justify-center text-[#e05297]">
                       {currentTrack?.id === track.id && isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
                     </div>
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0 ring-1 ring-[var(--color-border)]">
                       {track.albumArt ? <img src={track.albumArt} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center opacity-30"><AppLogo size={12} /></div>}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-bold truncate ${currentTrack?.id === track.id ? 'text-[#e05297]' : 'text-white'}`}>{track.title}</p>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{track.artist}</p>
+                      <p className={`text-sm font-bold truncate ${currentTrack?.id === track.id ? 'text-[#e05297]' : 'text-[var(--color-text-primary)]'}`}>{track.title}</p>
+                      <p className="text-xs text-[var(--color-text-secondary)] truncate mt-0.5">{track.artist}</p>
                     </div>
-                    <div className="hidden sm:block text-xs text-slate-500 font-medium px-4">
+                    <div className="hidden sm:block text-xs text-[var(--color-text-secondary)] font-medium px-4">
                       {new Date(track.createdAt || 0).toLocaleDateString()}
                     </div>
                   </div>
@@ -305,7 +353,7 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
                 <motion.div 
                   layout
                   key={name}
-                  className={`bg-white/[0.03] border border-white/[0.06] rounded-[24px] overflow-hidden transition-all duration-300 ${expandedArtist === name ? 'ring-1 ring-[#e05297]/30 bg-white/[0.05]' : 'hover:bg-white/[0.05]'}`}
+                  className={`bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-[24px] overflow-hidden transition-all duration-300 theme-transition ${expandedArtist === name ? 'ring-1 ring-[#e05297]/30 bg-[var(--color-bg-hover)]' : 'hover:bg-[var(--color-bg-hover)]'}`}
                 >
                   <div 
                     onClick={() => setExpandedArtist(expandedArtist === name ? null : name)}
@@ -317,16 +365,16 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg sm:text-xl font-black text-white truncate leading-tight mb-1">{name}</h3>
+                      <h3 className="text-lg sm:text-xl font-black text-[var(--color-text-primary)] truncate leading-tight mb-1">{name}</h3>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border border-white/5">
+                        <span className="px-2 py-0.5 rounded-md bg-[var(--color-bg-surface)] text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider border border-[var(--color-border)]">
                           Artist
                         </span>
-                        <p className="text-xs sm:text-sm text-slate-500 font-bold">{tracks.length} {tracks.length === 1 ? 'track' : 'tracks'}</p>
+                        <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] font-bold">{tracks.length} {tracks.length === 1 ? 'track' : 'tracks'}</p>
                       </div>
                     </div>
 
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${expandedArtist === name ? 'bg-[#e05297] text-white rotate-180' : 'bg-white/5 text-slate-500'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${expandedArtist === name ? 'bg-[#e05297] text-white rotate-180 animate-pulse' : 'bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]'}`}>
                       <ChevronRight size={20} />
                     </div>
                   </div>
@@ -338,16 +386,16 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="border-t border-white/[0.04]"
+                        className="border-t border-[var(--color-border)]"
                       >
-                        <div className="p-3 sm:p-4 space-y-1 bg-black/20">
+                        <div className="p-3 sm:p-4 space-y-1 bg-[var(--color-bg-surface)]/50">
                           {tracks.map((track, i) => (
                             <div
                               key={track.id}
                               onClick={(e) => { e.stopPropagation(); handlePlay(track, tracks); }}
-                              className={`flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer group/item ${currentTrack?.id === track.id ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'}`}
+                              className={`flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer group/item ${currentTrack?.id === track.id ? 'bg-[var(--color-bg-hover)]' : 'hover:bg-[var(--color-bg-hover)]/60'}`}
                             >
-                              <div className="w-10 text-slate-600 font-mono text-[10px] text-center group-hover/item:hidden">
+                              <div className="w-10 text-[var(--color-text-muted)] font-mono text-[10px] text-center group-hover/item:hidden">
                                 {(i + 1).toString().padStart(2, '0')}
                               </div>
                               <div className="hidden group-hover/item:flex w-10 items-center justify-center text-[#e05297]">
@@ -363,11 +411,11 @@ export default function SongGrid({ refreshTrigger = 0, currentView = 'home' }: S
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-bold truncate ${currentTrack?.id === track.id ? 'text-[#e05297]' : 'text-white'}`}>{track.title}</p>
-                                <p className="text-[11px] text-slate-500 font-medium mt-0.5">#{i + 1} from {name}</p>
+                                <p className={`text-sm font-bold truncate ${currentTrack?.id === track.id ? 'text-[#e05297]' : 'text-[var(--color-text-primary)]'}`}>{track.title}</p>
+                                <p className="text-[11px] text-[var(--color-text-secondary)] font-medium mt-0.5">#{i + 1} from {name}</p>
                               </div>
                               <div className="hidden sm:block">
-                                <button className="p-2 text-slate-600 hover:text-white transition-colors">
+                                <button className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
                                   <MoreVertical size={16} />
                                 </button>
                               </div>
